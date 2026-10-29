@@ -33,7 +33,7 @@ export default async (request) => {
       });
     }
 
-    const secretKey = Netlify.env.get("PAYSTACK_SECRET_KEY");
+   const secretKey = process.env.PAYSTACK_SECRET_KEY; ;
 
     if (!secretKey) {
       throw new Error("Paystack secret key is not configured");
