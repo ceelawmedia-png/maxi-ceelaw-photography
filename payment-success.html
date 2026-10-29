@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Payment status | Maxi Ceelaw Photography</title>
+<style>
+body{font-family:Arial,sans-serif;background:#fbf8f1;color:#171717;margin:0;padding:24px;line-height:1.6}
+main{max-width:620px;margin:8vh auto;background:#fff;border:1px solid #e8e0d2;border-radius:12px;padding:28px}
+h1{font-size:28px}p{color:#555}.status{padding:14px;background:#f1e7d3;border-radius:6px}
+a{display:inline-block;background:#c79a43;color:#171717;text-decoration:none;padding:12px 18px;border-radius:5px;font-weight:bold;margin-top:12px}
+</style>
+</head>
+<body>
+<main>
+<h1>Maxi Ceelaw Photography</h1>
+<p class="status" id="status">Checking your payment with Paystack…</p>
+<p id="detail">Please keep this page open while we verify the transaction.</p>
+<a href="/" id="home">Return to website</a>
+</main>
+<script>
+(async () => {
+  const status = document.getElementById("status");
+  const detail = document.getElementById("detail");
+  const params = new URLSearchParams(location.search);
+  const reference = params.get("reference") || params.get("trxref");
+  if (!reference) {
+    status.textContent = "No payment reference was found.";
+    detail.textContent = "If you attempted payment, contact Maxi Ceelaw Photography before trying again.";
+    return;
+  }
+  try {
+    const response = await fetch("/.netlify/functions/verify-payment?reference=" + encodeURIComponent(reference), { cache: "no-store" });
+    const result = await response.json();
+    if (response.ok && result.verified) {
+      status.textContent = "Payment verified successfully.";
+      detail.textContent = "Verified deposit: ₦" + Number(result.amount).toLocaleString("en-NG") + ". Reference: " + result.reference + ". Please contact us on WhatsApp to confirm your event date; payment alone does not guarantee availability.";
+    } else {
+      status.textContent = "Payment has not been confirmed.";
+      detail.textContent = result.error || result.message || "Please contact us on WhatsApp and provide your payment reference: " + reference;
+    }
+  } catch {
+    status.textContent = "We couldn't verify the payment right now.";
+    detail.textContent = "Do not pay again immediately. Please contact us with your payment reference: " + reference;
+  }
+})();
+</script>
+</body>
+</html>
